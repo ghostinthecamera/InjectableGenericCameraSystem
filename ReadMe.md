@@ -34,6 +34,7 @@ automatically when you clone the repo. The camera uses DirectXMath for the 3D ma
 * Bulletstorm Full Clip Edition: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/BulletstormFCE
 * Deus Ex: Mankind Divided: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/DXMD
 * Devil May Cry 5: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/DMC5
+* Dishonored 2: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/Dishonored2
 * DOOM x64: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/DOOM
 * Dying Light: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/DyingLight
 * Hellblade: Senua's Sacrifice: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/Hellblade
@@ -58,5 +59,10 @@ I've written a long, in-depth article about how to create camera tools and how I
 
 ## Acknowledgements
 Some camera code uses [MinHook](https://github.com/TsudaKageyu/minhook) by Tsuda Kageyu.
+
+## Donations
+I do this for fun, not profit, but can't create cameras for games I don't own. If you want me to make cameras for new games, please donate
+to https://www.paypal.me/FransBouma. Additionally, after I've finished a game I usually uninstall it and it might be a camera gets broken after that date. 
+If you want me to fix that camera, I'll usually asked for a donation to my paypal account for compensation. 
 
 

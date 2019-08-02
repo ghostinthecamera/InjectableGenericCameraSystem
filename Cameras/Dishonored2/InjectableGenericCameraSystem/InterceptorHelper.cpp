@@ -31,49 +31,124 @@
 #include "GameImageHooker.h"
 #include <map>
 #include "CameraManipulator.h"
+#include "Console.h"
+#include "AOBBlock.h"
 
 using namespace std;
 
 namespace IGCS::GameSpecific::InterceptorHelper
 {
-	void disableAnselChecks(LPBYTE hostImageAddress)
-	{
-		//Dishonored2.exe+4C79450 - 48 83 EC 28           - sub rsp,28 { 40 }
-		//Dishonored2.exe+4C79454 - 48 8B 0D 0D3892FD     - mov rcx,[Dishonored2.exe+259CC68] 
-		//Dishonored2.exe+4C7945B - 48 85 C9              - test rcx,rcx
-		//Dishonored2.exe+4C7945E - 0F84 F1000000         - je Dishonored2.exe+4C79555				<<< NOP
-		//Dishonored2.exe+4C79464 - 48 8B 01              - mov rax,[rcx]
-		//Dishonored2.exe+4C79467 - FF 90 D0000000        - call qword ptr [rax+000000D0]
-		//Dishonored2.exe+4C7946D - 84 C0                 - test al,al
-		//Dishonored2.exe+4C7946F - 0F85 E0000000         - jne Dishonored2.exe+4C79555				<<< NOP
-		//Dishonored2.exe+4C79475 - 48 8B 0D EC3792FD     - mov rcx,[Dishonored2.exe+259CC68] 
-		//Dishonored2.exe+4C7947C - 48 8B 01              - mov rax,[rcx]
-		//Dishonored2.exe+4C7947F - FF 90 E0000000        - call qword ptr [rax+000000E0]
-		//Dishonored2.exe+4C79485 - 84 C0                 - test al,al
-		//Dishonored2.exe+4C79487 - 0F85 C8000000         - jne Dishonored2.exe+4C79555				<<< NOP
-		//Dishonored2.exe+4C7948D - 48 8B 0D D43792FD     - mov rcx,[Dishonored2.exe+259CC68] 
-		//Dishonored2.exe+4C79494 - 48 8B 01              - mov rax,[rcx]
-		//Dishonored2.exe+4C79497 - FF 50 40              - call qword ptr [rax+40]
-		//Dishonored2.exe+4C7949A - 84 C0                 - test al,al
-		//Dishonored2.exe+4C7949C - 0F84 B3000000         - je Dishonored2.exe+4C79555				<<< NOP
-		//Dishonored2.exe+4C794A2 - 48 8B 05 47227BFE     - mov rax,[Dishonored2.exe+342B6F0] 
-		//Dishonored2.exe+4C794A9 - 48 8D 0D 40227BFE     - lea rcx,[Dishonored2.exe+342B6F0] 
-		//Dishonored2.exe+4C794B0 - FF 90 10010000        - call qword ptr [rax+00000110]
-		//Dishonored2.exe+4C794B6 - 84 C0                 - test al,al
-		//Dishonored2.exe+4C794B8 - 0F85 97000000         - jne Dishonored2.exe+4C79555				<<< NOP
-		//Dishonored2.exe+4C794BE - 48 8B 0D A33792FD     - mov rcx,[Dishonored2.exe+259CC68] 
-		//Dishonored2.exe+4C794C5 - 48 81 C1 C86E1F00     - add rcx,001F6EC8 { [00000000] }
-		//Dishonored2.exe+4C794CC - E8 DF2DE9FF           - call Dishonored2.exe+4B0C2B0
-		//Dishonored2.exe+4C794D1 - 83 F8 05              - cmp eax,05 { 5 }
-		//Dishonored2.exe+4C794D4 - 74 7F                 - je Dishonored2.exe+4C79555				<<< NOP
-		//Dishonored2.exe+4C794D6 - E8 F55F4CFF           - call Dishonored2.exe+413F4D0
-		//Dishonored2.exe+4C794DB - 8B 05 C703DFFE        - mov eax,[Dishonored2.exe+3A698A8]
+	typedef void(__stdcall* AnselSessionStartStopFunction) ();
 
-		GameImageHooker::nopRange(hostImageAddress + 0x4C7945E, 6);
-		GameImageHooker::nopRange(hostImageAddress + 0x4C7946F, 6);
-		GameImageHooker::nopRange(hostImageAddress + 0x4C79487, 6);
-		GameImageHooker::nopRange(hostImageAddress + 0x4C7949C, 6);
-		GameImageHooker::nopRange(hostImageAddress + 0x4C794B8, 6);
-		GameImageHooker::nopRange(hostImageAddress + 0x4C794D4, 2);
+	static bool _anselSDKFound = false;
+	static AnselSessionStartStopFunction _startSessionFunc = nullptr;
+	static AnselSessionStartStopFunction _stopSessionFunc = nullptr;
+
+	void initializeAOBBlocks(LPBYTE hostImageAddress, DWORD hostImageSize, map<string, AOBBlock*>& aobBlocks)
+	{
+		// AOBs in hostimage
+		aobBlocks[ANSEL_START_SESSION_KEY] = new AOBBlock(ANSEL_START_SESSION_KEY, "48 83 EC 28 48 8B 0D ?? ?? ?? ?? 48 85 C9 0F 84 ?? ?? ?? ?? 48 8B 01 FF 90 ?? ?? ?? ?? 84 C0", 1);
+		aobBlocks[ANSEL_STOP_SESSION_KEY] = new AOBBlock(ANSEL_STOP_SESSION_KEY, "48 83 EC 68 48 C7 44 24 30 FE FF FF FF 8B 15 ?? ?? ?? ?? 48 8D 4C 24 38", 1);
+		aobBlocks[ANSEL_SETUP_UPDATECAMERA_KEY] = new AOBBlock(ANSEL_SETUP_UPDATECAMERA_KEY, "F3 0F 11 05 ?? ?? ?? ?? F3 0F 10 83 ?? ?? ?? ?? F3 0F 11 05 | ?? ?? ?? ?? F3 0F 10 8B ?? ?? ?? ?? F3 0F 11 0D ?? ?? ?? ?? F3 0F 10 83 ?? ?? ?? ?? F3 0F 10 4D 97", 1);
+		aobBlocks[WIN_PAUSEONFOCUSLOSS_KEY] = new AOBBlock(WIN_PAUSEONFOCUSLOSS_KEY, "84 C0 75 ?? 83 3D | ?? ?? ?? ?? 00 74 ?? 48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 90", 1);
+	
+		map<string, AOBBlock*>::iterator it;
+		bool result = true;
+		for (it = aobBlocks.begin(); it != aobBlocks.end(); it++)
+		{
+			result &= it->second->scan(hostImageAddress, hostImageSize);
+		}
+
+		if (aobBlocks[ANSEL_START_SESSION_KEY]->found())
+		{
+			_startSessionFunc = (AnselSessionStartStopFunction)aobBlocks[ANSEL_START_SESSION_KEY]->absoluteAddress();
+		}
+		if (aobBlocks[ANSEL_STOP_SESSION_KEY]->found())
+		{
+			_stopSessionFunc = (AnselSessionStartStopFunction)aobBlocks[ANSEL_STOP_SESSION_KEY]->absoluteAddress();
+		}
+		if (aobBlocks[ANSEL_SETUP_UPDATECAMERA_KEY]->found())
+		{
+			CameraManipulator::setCameraStructAddress(Utils::calculateAbsoluteAddress(aobBlocks[ANSEL_SETUP_UPDATECAMERA_KEY], 4));
+		}
+
+		// AOBs in AnselSDK64 dll
+		MODULEINFO ansel64SDKdllInfo = Utils::getModuleInfoOfDll(L"AnselSDK64.dll");
+		if (nullptr == ansel64SDKdllInfo.lpBaseOfDll)
+		{
+			Console::WriteLine("Ansel SDK not found, movement fix for Ansel not applied.");
+		}
+		else
+		{
+			aobBlocks[ANSEL_SDK_GETCONFIGURATION_KEY] = new AOBBlock(ANSEL_SDK_GETCONFIGURATION_KEY, "0F 28 05 | ?? ?? ?? ?? 0F 11 01 0F 28 0D ?? ?? ?? ?? 0F 11 49 10 0F 28 05 ?? ?? ?? ?? 0F 11 41 20", 1);
+			_anselSDKFound = aobBlocks[ANSEL_SDK_GETCONFIGURATION_KEY]->scan((LPBYTE)ansel64SDKdllInfo.lpBaseOfDll, ansel64SDKdllInfo.SizeOfImage);
+			result &= _anselSDKFound;
+		}
+		
+		if (result)
+		{
+			Console::WriteLine("All interception offsets found.");
+		}
+		else
+		{
+			Console::WriteError("One or more interception offsets weren't found: tools aren't compatible with this game's version.");
+		}
+	}
+
+
+	void fixAnsel(map<string, AOBBlock*>& aobBlocks)
+	{
+		// nop the jne's so start session always succeeds.
+		GameImageHooker::nopRange(aobBlocks[ANSEL_START_SESSION_KEY]->absoluteAddress() + STARTSESSION_JMP_OFFSET1, 6);
+		GameImageHooker::nopRange(aobBlocks[ANSEL_START_SESSION_KEY]->absoluteAddress() + STARTSESSION_JMP_OFFSET2, 6);
+		GameImageHooker::nopRange(aobBlocks[ANSEL_START_SESSION_KEY]->absoluteAddress() + STARTSESSION_JMP_OFFSET3, 6);
+		GameImageHooker::nopRange(aobBlocks[ANSEL_START_SESSION_KEY]->absoluteAddress() + STARTSESSION_JMP_OFFSET4, 6);
+		GameImageHooker::nopRange(aobBlocks[ANSEL_START_SESSION_KEY]->absoluteAddress() + STARTSESSION_JMP_OFFSET5, 6);
+		GameImageHooker::nopRange(aobBlocks[ANSEL_START_SESSION_KEY]->absoluteAddress() + STARTSESSION_JMP_OFFSET6, 2);
+
+		// switch off win_pauseOnLossOfFocus. This is needed when playing windowed and enabling ansel (for the people who want to).
+		if (aobBlocks[WIN_PAUSEONFOCUSLOSS_KEY]->found())
+		{
+			// Dishonored_DO.exe+12E868 - 83 3D 19C93C03 00     - cmp dword ptr [Dishonored_DO.exe+34FB188],00
+			// pass 5 to calculate function, as next opcode is 5 bytes away (4 + the byte for 00).
+			GameImageHooker::writeBytesToProcessMemory(Utils::calculateAbsoluteAddress(aobBlocks[WIN_PAUSEONFOCUSLOSS_KEY], 5), 1, (BYTE)0);
+		}
+
+		Console::WriteLine("Ansel enabled everywhere.");
+
+		// set the movement speed inside the ansel struct in memory to 2.0f. 
+		if (_anselSDKFound)
+		{
+			float speedValue = 2.0f;
+			BYTE* speedValueFirstByte;
+			speedValueFirstByte = (BYTE*)& speedValue;
+			// calculate the address of the variable, relative to the RIP value lifted from the first getConfiguration statement. 
+			// AnselSDK64.dll+1850 - 0F28 05 799F0100      - movaps xmm0,[AnselSDK64.dll+1B7D0]
+			LPBYTE configStartAddress = Utils::calculateAbsoluteAddress(aobBlocks[ANSEL_SDK_GETCONFIGURATION_KEY], 4);
+			// value is at offset 0x24, 3x3 floats first, then the value we have to set, translationalSpeedInWorldUnitsPerSecond
+			// nv::Vec3 right, up, forward;
+			// float translationalSpeedInWorldUnitsPerSecond;
+			GameImageHooker::writeRange(configStartAddress + 0x24, speedValueFirstByte, 4);
+
+			Console::WriteLine("Ansel fixed so movement now works.");
+		}
+	}
+
+
+	void startAnselSession()
+	{
+		if (nullptr != _startSessionFunc)
+		{
+			_startSessionFunc();
+		}
+	}
+
+
+	void stopAnselSession()
+	{
+		if (nullptr != _stopSessionFunc)
+		{
+			_stopSessionFunc();
+		}
 	}
 }

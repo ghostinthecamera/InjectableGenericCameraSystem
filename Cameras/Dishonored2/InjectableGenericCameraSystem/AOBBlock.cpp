@@ -29,7 +29,7 @@
 #include "stdafx.h"
 #include "AOBBlock.h"
 #include "Utils.h"
-#include "OverlayConsole.h"
+#include "Console.h"
 #include "ScanPattern.h"
 
 using namespace std;
@@ -79,12 +79,12 @@ namespace IGCS
 		}
 		if (nullptr == aobPatternLocation)
 		{
-			OverlayConsole::instance().logError("Can't find pattern for block '%s'! Hook not set.", _blockName.c_str());
+			Console::WriteError(Utils::formatStringFlexible("Can't find pattern for block '%s'! Hook not set.", _blockName.c_str()));
 			return toReturn;
 		}
 		else
 		{
-			OverlayConsole::instance().logDebug("Pattern for block '%s' found at address: %p", _blockName.c_str(), (void*)aobPatternLocation);
+			Console::WriteDebugLine(Utils::formatStringFlexible("Pattern for block '%s' found at address: %p", _blockName.c_str(), (void*)aobPatternLocation));
 			_found = true;
 		}
 		_locationInImage = aobPatternLocation;

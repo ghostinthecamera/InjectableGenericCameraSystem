@@ -1,9 +1,9 @@
 #pragma once
 
 #include "stdafx.h"
-#include <d3d11.h> 
+#include <d3d12.h> 
 
-namespace IGCS::D3D11Hooker
+namespace IGCS::D3D12InternalOverlay
 {
 	void initializeHook();
 }

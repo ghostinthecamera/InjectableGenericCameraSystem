@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Part of Injectable Generic Camera System
-// Copyright(c) 2017, Frans Bouma
+// Copyright(c) 2019, Frans Bouma
 // All rights reserved.
 // https://github.com/FransBouma/InjectableGenericCameraSystem
 //
@@ -27,6 +27,13 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "stdafx.h"
+#include "ScanPattern.h"
+
+namespace IGCS
+{
+	// forward declaration to avoid cyclic dependency.
+	class AOBBlock;
+}
 
 namespace IGCS::Utils
 {
@@ -35,7 +42,30 @@ namespace IGCS::Utils
 		HWND best_handle;
 	};
 
+	template <typename T>
+	T clamp(T value, T min, T max, T default)
+	{
+		return value < min ? default
+			: value > max ? default: value;
+	}
+	
+	template <typename T>
+	T clamp(T value, T min, T default)
+	{
+		return value < min ? default : value;
+	}
+	
+
 	HWND findMainWindow(unsigned long process_id);
-	HMODULE getBaseAddressOfContainingProcess();
-	HMODULE getBaseAddressOfDll(LPCWSTR libraryName);
+	MODULEINFO getModuleInfoOfContainingProcess();
+	MODULEINFO getModuleInfoOfDll(LPCWSTR libraryName);
+	LPBYTE findAOBPattern(LPBYTE imageAddress, DWORD imageSize, ScanPattern pattern);
+	BYTE CharToByte(char c);
+	LPBYTE calculateAbsoluteAddress(AOBBlock* locationData, int nextOpCodeOffset);
+	std::string formatString(const char *fmt, va_list args);
+	std::string formatStringFlexible(const char* fmt, ...);
+	bool stringStartsWith(const char *a, const char *b);
+	bool keyDown(int virtualKeyCode);
+	bool altPressed();
+	std::string vkCodeToString(int vkCode);
 }
