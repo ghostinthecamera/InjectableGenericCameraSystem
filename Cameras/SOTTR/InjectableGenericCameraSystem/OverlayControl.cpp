@@ -64,11 +64,13 @@ namespace IGCS::OverlayControl
 	void addNotification(string notificationText)
 	{
 		EnterCriticalSection(&_notificationCriticalSection);
+#if !_DX12_
 			Notification toAdd;
 			toAdd.notificationText = notificationText;
 			toAdd.timeFirstDisplayed = -1.0f;
 			_activeNotifications.push_back(toAdd);
 			OverlayConsole::instance().logLine(notificationText.c_str());
+#endif
 		LeaveCriticalSection(&_notificationCriticalSection);
 	}
 
@@ -80,7 +82,7 @@ namespace IGCS::OverlayControl
 		Globals::instance().saveSettingsIfRequired(ImGui::GetIO().DeltaTime);
 
 #if _DX12_
-		ImGui_ImplDX12_NewFrame();
+		//ImGui_ImplDX12_NewFrame();
 #else
 		ImGui_ImplDX11_NewFrame();
 #endif
@@ -237,6 +239,10 @@ Special thanks to:
 			ImGui::Text("Reset FoV                            : %s or controller B-button", Globals::instance().getActionData(ActionType::FovReset)->toString().c_str());
 			ImGui::Text("Block input to game                  : %s", Globals::instance().getActionData(ActionType::BlockInput)->toString().c_str());
 			//ImGui::Text("Toggle game pause                    : %s", Globals::instance().getActionData(ActionType::Timestop)->toString().c_str());
+
+			ImGui::Text("Test multi-screenshot setup          : %s", Globals::instance().getActionData(ActionType::TestMultiShotSetup)->toString().c_str());
+			ImGui::Text("Take multi-screenshot                : %s", Globals::instance().getActionData(ActionType::TakeMultiShot)->toString().c_str());
+			ImGui::Text("Take screenshot                      : %s", Globals::instance().getActionData(ActionType::TakeScreenshot)->toString().c_str());
 		}
 
 		if (ImGui::CollapsingHeader("Settings editor help"))
@@ -299,6 +305,30 @@ Special thanks to:
 		if (ImGui::CollapsingHeader("Misc. camera options", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			settingsChanged |= ImGui::SliderFloat("Field of View (FoV) zoom speed", &currentSettings.fovChangeSpeed, 0.0001f, 0.01f, "%.4f");
+		}
+		if (ImGui::CollapsingHeader("Screenshot options", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			bool screenshotSettingsChanged = false;
+			screenshotSettingsChanged |= ImGui::InputText("Screenshot output directory", currentSettings.screenshotFolder, 256);
+			screenshotSettingsChanged |= ImGui::SliderInt("Number of frames to wait between steps", &currentSettings.numberOfFramesToWaitBetweenSteps, 1, 100);
+			screenshotSettingsChanged |= ImGui::Combo("Multi-screenshot type", &currentSettings.typeOfScreenshot, "HorizontalPanorama\0Lightfield\0\0");
+			switch (currentSettings.typeOfScreenshot)
+			{
+				case (int)ScreenshotType::HorizontalPanorama:
+					screenshotSettingsChanged |= ImGui::SliderFloat("Total field of view in panorama (in degrees)", &currentSettings.totalPanoAngleDegrees, 30.0f, 360.0f, "%.1f");
+					screenshotSettingsChanged |= ImGui::SliderFloat("Percentage of overlap between shots", &currentSettings.overlapPercentagePerPanoShot, 0.1f, 99.0f, "%.1f");
+					break;
+				case (int)ScreenshotType::Lightfield:
+					screenshotSettingsChanged |= ImGui::SliderFloat("Distance between Lightfield shots", &currentSettings.distanceBetweenLightfieldShots, 0.0f, 5.0f, "%.3f");
+					screenshotSettingsChanged |= ImGui::SliderInt("Number of shots to take", &currentSettings.numberOfShotsToTake, 0, 60);
+					break;
+					// others: ignore.
+			}
+			if (screenshotSettingsChanged)
+			{
+				Globals::instance().reinitializeScreenshotController();
+			}
+			settingsChanged |= screenshotSettingsChanged;
 		}
 		ImGui::PopItemWidth();
 		if (settingsChanged)

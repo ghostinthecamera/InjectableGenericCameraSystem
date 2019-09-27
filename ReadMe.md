@@ -18,13 +18,25 @@ configurable ball. Additionally, cameras are often written once and perhaps fixe
 the code for each camera and adapting it makes possible to add new features to future cameras without affecting the older ones. 
 
 ## Requirements to build the code
-To build the code, you need to have VC++ 2015 update 3 or higher, newer cameras need VC++ 2017. 
+To build the code, you need to have VC++ 2017 or higher, newer cameras need VC++ 2019. 
 Additionally you need to have installed the Windows SDK, at least the windows 8 version. The VC++ installer should install this. 
 The SDK is needed for DirectXMath.h
 
 ### External dependencies
 There's an external dependency on [MinHook](https://github.com/TsudaKageyu/minhook) through a git submodule. This should be downloaded
 automatically when you clone the repo. The camera uses DirectXMath for the 3D math, which is a self-contained .h file, from the Windows SDK. 
+
+### Commercial usage 
+These cameras and its system are made by volunteers in their spare time. If you use these camera for commercial activities 
+(e.g. you make money with the shots or videos you produce with this camera), consider a donation. 
+
+### Support
+There's no support. If a camera breaks because of a game update, you're encouraged to send in a pull request with a fix. Cameras get updated from time to time
+but the older the camera gets, the more likely it's not going to be updated. 
+
+### Binaries with the releases
+Some cameras have binaries with their release, most don't. Only the most recent cameras have binary distributions. If you need a binary for an older game,
+ask, and I might re-upload it. 
 
 ## Camera's released: 
 * Assassin's Creed 3: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/AssassinsCreed3
@@ -37,9 +49,11 @@ automatically when you clone the repo. The camera uses DirectXMath for the 3D ma
 * Dishonored 2: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/Dishonored2
 * DOOM x64: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/DOOM
 * Dying Light: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/DyingLight
+* GreedFall: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/Greedfall
 * Hellblade: Senua's Sacrifice: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/Hellblade
 * Hitman 2016: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/Hitman2016
 * Homefront: The Revolution: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/HomefrontTheRevolution
+* Kingdom Come Deliverance: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/KingdomComeDeliverance
 * Lords of the Fallen: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/LordsOfTheFallen
 * Mafia III: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/Mafia3
 * Metal Gear Solid V: The Phantom Pain: https://github.com/FransBouma/InjectableGenericCameraSystem/tree/master/Cameras/MGS5
@@ -63,6 +77,7 @@ Some camera code uses [MinHook](https://github.com/TsudaKageyu/minhook) by Tsuda
 ## Donations
 I do this for fun, not profit, but can't create cameras for games I don't own. If you want me to make cameras for new games, please donate
 to https://www.paypal.me/FransBouma. Additionally, after I've finished a game I usually uninstall it and it might be a camera gets broken after that date. 
-If you want me to fix that camera, I'll usually asked for a donation to my paypal account for compensation. 
+For that I'm sorry.
+
 
 

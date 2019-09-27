@@ -41,6 +41,9 @@
 #include "OverlayConsole.h"
 #include "OverlayControl.h"
 #include "MinHook.h"
+#include <time.h>
+#include <direct.h>
+#include "ScreenshotController.h"
 
 namespace IGCS
 {
@@ -83,27 +86,7 @@ namespace IGCS
 	void System::updateFrame()
 	{
 		handleUserInput();
-		writeNewCameraValuesToCameraStructs();
-	}
-	
-
-	void System::writeNewCameraValuesToCameraStructs()
-	{
-		if (!g_cameraEnabled)
-		{
-			return;
-		}
-
-		// calculate new camera values. We have two cameras, but they might not be available both, so we have to test before we do anything. 
-		DirectX::XMVECTOR newLookQuaternion = _camera.calculateLookQuaternion();
-		DirectX::XMFLOAT3 currentCoords;
-		DirectX::XMFLOAT3 newCoords;
-		if (GameSpecific::CameraManipulator::isCameraFound())
-		{
-			currentCoords = GameSpecific::CameraManipulator::getCurrentCameraCoords();
-			newCoords = _camera.calculateNewCoords(currentCoords, newLookQuaternion);
-			GameSpecific::CameraManipulator::writeNewCameraValuesToGameData(newCoords, newLookQuaternion);
-		}
+		CameraManipulator::updateCameraDataInGameData(_camera);
 	}
 
 
@@ -140,6 +123,8 @@ namespace IGCS
 				CameraManipulator::restoreOriginalValuesAfterCameraDisable();
 				toggleCameraMovementLockState(false);
 				InterceptorHelper::toggleDofEnableWrite(_aobBlocks, true);
+				// disable screenshot action
+				Globals::instance().getScreenshotController().reset();
 			}
 			else
 			{
@@ -180,6 +165,24 @@ namespace IGCS
 		if (!g_cameraEnabled)
 		{
 			// camera is disabled. We simply disable all input to the camera movement, by returning now.
+			return;
+		}
+		if (Input::isActionActivated(ActionType::TakeScreenshot))
+		{
+			takeSingleScreenshot();
+			_applyHammerPrevention = true;
+			return;
+		}
+		if (Input::isActionActivated(ActionType::TestMultiShotSetup))
+		{
+			takeMultiShot(true);
+			_applyHammerPrevention = true;
+			return;
+		}
+		if (Input::isActionActivated(ActionType::TakeMultiShot))
+		{
+			takeMultiShot(false);
+			_applyHammerPrevention = true;
 			return;
 		}
 		if (Input::isActionActivated(ActionType::BlockInput))
@@ -413,9 +416,55 @@ namespace IGCS
 		CameraManipulator::setTimeStopValue(_timeStopped);
 	}
 
+
 	void System::toggleHudRenderState()
 	{
 		_hudToggled = !_hudToggled;
 		InterceptorHelper::toggleHudRenderState(_aobBlocks, _hudToggled);
+	}
+
+
+	void System::takeMultiShot(bool isTestRun)
+	{
+		// first cache the camera state
+		GameSpecific::CameraManipulator::cacheOriginalValuesBeforeMultiShot();
+
+		Settings& settings = Globals::instance().settings();
+		// calls won't return till the process has been completed. 
+		switch (static_cast<ScreenshotType>(settings.typeOfScreenshot))
+		{
+			case ScreenshotType::HorizontalPanorama:
+				{
+					// The total fov of the pano is always given in degrees. So we have to calculate that back to radians for usage with our camera.
+					float totalPanoAngleInDegrees = Utils::clamp(settings.totalPanoAngleDegrees, 30.0f, 360.0f, 110.0f);
+					float totalPanoAngleInRadians = (totalPanoAngleInDegrees / 180.0f) * DirectX::XM_PI;
+					float currentFoVInRadians = Utils::clamp(CameraManipulator::getCurrentFoV(), 0.01f, 3.1f, 1.34f);		// clamp it to max 180degrees. 
+					// if total fov is < than current fov, why bother with a pano?
+					if (currentFoVInRadians > 0.0f && currentFoVInRadians < totalPanoAngleInRadians)
+					{
+						// take the shots
+						Globals::instance().getScreenshotController().startHorizontalPanoramaShot(_camera, totalPanoAngleInRadians,
+																									Utils::clamp(settings.overlapPercentagePerPanoShot, 0.1f, 99.0f, 70.0f),
+																									currentFoVInRadians, isTestRun);
+					}
+					else
+					{
+						OverlayControl::addNotification("The total panorama angle is smaller than the current field of view, so just take a single screenshot instead.");
+					}
+				}
+				break;
+			case ScreenshotType::Lightfield:
+				Globals::instance().getScreenshotController().startLightfieldShot(_camera, settings.distanceBetweenLightfieldShots, settings.numberOfShotsToTake, isTestRun);
+				break;
+		}
+		// restore camera state
+		GameSpecific::CameraManipulator::restoreOriginalValuesAfterMultiShot();
+	}
+
+
+	void System::takeSingleScreenshot()
+	{
+		// calls won't return till the process has been completed. 
+		Globals::instance().getScreenshotController().startSingleShot();
 	}
 }
