@@ -2,8 +2,8 @@ Injectable camera for Assassin's Creed Odyssey
 ============================
 
 Current supported game version: v1.5.0+ (UPlay version)  
-Binary download: https://github.com/FransBouma/InjectableGenericCameraSystem/releases/tag/ACOD_1011  
-Camera version: 1.0.10  
+Binary download: https://github.com/FransBouma/InjectableGenericCameraSystem/releases/tag/ACOD_1013  
+Camera version: 1.0.13  
 Credits: Otis_Inf. 
 
 ### Important
@@ -33,6 +33,8 @@ Experimental:
 - Single screenshot
 
 ### Change log:
+v1.0.13: Ctrl-Mousewheel resizes the window again.
+v1.0.12: Fixed bug when injecting the camera into a minimized/fullscreen game. 
 v1.0.11: Fixed bug in multi-shot functionality and hotsampling where a backbuffer wasn't released properly
 v1.0.10: Added Panorama multi-shot functionality.
 v1.0.9: Update for v1.5.0 of the game. Merge of Lightfield/single shot screenshot functionality.

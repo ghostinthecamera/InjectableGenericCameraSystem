@@ -39,8 +39,6 @@ namespace IGCS::Input
 	void registerRawInput();
 	void resetKeyStates();
 	void resetMouseState();
-	void setKeyboardMouseStateInImGuiIO();
 	bool isActionActivated(ActionType type);
 	bool isActionActivated(ActionType type, bool altCtrlShiftOptional);
-	void collectPressedKeysCumulatively();
 }

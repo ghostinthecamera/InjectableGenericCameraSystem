@@ -198,15 +198,18 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;TESTINJECTDLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\dependencies\stb;$(SolutionDir)..\..\dependencies\MinHook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\dependencies\MinHook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dinput8.lib;dxguid.lib;Xinput9_1_0.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dinput8.lib;Xinput9_1_0.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /y $(TargetPath) $(SolutionDir)IGCSClient\bin\$(Configuration)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugDX12|x64'">
     <ClCompile>
@@ -223,6 +226,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>dinput8.lib;dxguid.lib;Xinput9_1_0.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /y $(TargetPath) $(SolutionDir)IGCSClient\bin\Debug</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -261,7 +267,7 @@
       <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;TESTINJECTDLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\dependencies\stb;$(SolutionDir)..\..\dependencies\MinHook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\..\dependencies\MinHook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>Custom</Optimization>
@@ -272,9 +278,12 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dinput8.lib;dxguid.lib.;Xinput9_1_0.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\frans.SD\Documents\GitHub\InjectableGenericCameraSystem\AdditionalLibs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dinput8.lib;Xinput9_1_0.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /y $(TargetPath) $(SolutionDir)IGCSClient\bin\$(Configuration)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDX12|x64'">
     <ClCompile>
@@ -295,14 +304,15 @@
       <AdditionalDependencies>dinput8.lib;dxguid.lib.;Xinput9_1_0.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Users\frans.SD\Documents\GitHub\InjectableGenericCameraSystem\AdditionalLibs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /y $(TargetPath) $(SolutionDir)IGCSClient\bin\Release</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ActionData.h" />
     <ClInclude Include="AOBBlock.h" />
     <ClInclude Include="CameraManipulator.h" />
-    <ClInclude Include="CDataFile.h" />
     <ClInclude Include="Console.h" />
-    <ClInclude Include="D3D11InternalOverlay.h" />
     <ClInclude Include="Defaults.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GameCameraData.h" />
@@ -313,17 +323,8 @@
     <ClInclude Include="InputHooker.h" />
     <ClInclude Include="InterceptorHelper.h" />
     <ClInclude Include="GameConstants.h" />
-    <ClInclude Include="OverlayConsole.h" />
-    <ClInclude Include="OverlayControl.h" />
-    <ClInclude Include="Overlay\imconfig.h" />
-    <ClInclude Include="Overlay\imgui.h" />
-    <ClInclude Include="Overlay\imgui_impl_dx11.h" />
-    <ClInclude Include="Overlay\imgui_impl_win32.h" />
-    <ClInclude Include="Overlay\imgui_internal.h" />
-    <ClInclude Include="Overlay\imstb_rectpack.h" />
-    <ClInclude Include="Overlay\imstb_textedit.h" />
-    <ClInclude Include="Overlay\imstb_truetype.h" />
-    <ClInclude Include="ScreenshotController.h" />
+    <ClInclude Include="MessageHandler.h" />
+    <ClInclude Include="NamedPipeManager.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="System.h" />
@@ -334,9 +335,7 @@
     <ClCompile Include="ActionData.cpp" />
     <ClCompile Include="AOBBlock.cpp" />
     <ClCompile Include="CameraManipulator.cpp" />
-    <ClCompile Include="CDataFile.cpp" />
     <ClCompile Include="Console.cpp" />
-    <ClCompile Include="D3D11InternalOverlay.cpp" />
     <ClCompile Include="GameImageHooker.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Main.cpp">
@@ -370,15 +369,8 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="InputHooker.cpp" />
     <ClCompile Include="InterceptorHelper.cpp" />
-    <ClCompile Include="OverlayConsole.cpp" />
-    <ClCompile Include="OverlayControl.cpp" />
-    <ClCompile Include="Overlay\imgui.cpp" />
-    <ClCompile Include="Overlay\imgui_demo.cpp" />
-    <ClCompile Include="Overlay\imgui_draw.cpp" />
-    <ClCompile Include="Overlay\imgui_impl_dx11.cpp" />
-    <ClCompile Include="Overlay\imgui_impl_win32.cpp" />
-    <ClCompile Include="Overlay\imgui_widgets.cpp" />
-    <ClCompile Include="ScreenshotController.cpp" />
+    <ClCompile Include="MessageHandler.cpp" />
+    <ClCompile Include="NamedPipeManager.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugDX12|Win32'">Create</PrecompiledHeader>
@@ -398,9 +390,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\dependencies\MinHook.vcxproj">
       <Project>{783fedfb-5124-4f8c-87bc-70aa8490266b}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\dependencies\stb.vcxproj">
-      <Project>{723bdef8-4a39-4961-bdab-54074012ff47}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

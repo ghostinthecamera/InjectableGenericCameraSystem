@@ -31,13 +31,14 @@ namespace IGCS::GameSpecific
 {
 	// Mandatory constants to define for a game
 	#define GAME_NAME									"Shadow of the Tomb Raider v1.0+"
-	#define CAMERA_VERSION								"1.0.4"
+	#define CAMERA_VERSION								"1.0.6"
 	#define CAMERA_CREDITS								"Otis_Inf."
 	#define GAME_WINDOW_TITLE							"Shadow of the Tomb Raider"
 	#define INITIAL_PITCH_RADIANS						0.0f	// around X axis	(right)
 	#define INITIAL_YAW_RADIANS							0.0f	// around Y axis	(out of the screen)
 	#define INITIAL_ROLL_RADIANS						0.0f	// around Z axis	(up)
 	#define CONTROLLER_Y_INVERT							false
+	// These will be overwritten by settings sent by the client. These defines are for initial usage. 
 	#define FASTER_MULTIPLIER							5.0f
 	#define SLOWER_MULTIPLIER							0.1f
 	#define MOUSE_SPEED_CORRECTION						0.2f	// to correct for the mouse-deltas related to normal rotation.
@@ -50,6 +51,7 @@ namespace IGCS::GameSpecific
 	// AOB Keys for interceptor's AOB scanner
 	#define CAMERA_ADDRESS_INTERCEPT_KEY				"AOB_CAMERA_ADDRESS_INTERCEPT"
 	#define CAMERA_WRITE1_INTERCEPT_KEY					"AOB_CAMERA_WRITE1_INTERCEPT"
+	#define CAMERA_AR_FIX_INTERCEPT_KEY					"AOB_CAMERA_AR_FIX_INTERCEPT"
 
 	// Indices in the structures read by interceptors 
 	#define QUATERNION_IN_STRUCT_OFFSET					0xA0

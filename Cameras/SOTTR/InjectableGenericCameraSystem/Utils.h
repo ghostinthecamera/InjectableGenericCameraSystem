@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "stdafx.h"
+#include <filesystem>
 
 namespace IGCS
 {
@@ -59,7 +60,7 @@ namespace IGCS::Utils
 	MODULEINFO getModuleInfoOfContainingProcess();
 	MODULEINFO getModuleInfoOfDll(LPCWSTR libraryName);
 	LPBYTE findAOBPattern(LPBYTE imageAddress, DWORD imageSize, AOBBlock* const toScanFor);
-	BYTE CharToByte(char c);
+	uint8_t CharToByte(char c);
 	LPBYTE calculateAbsoluteAddress(AOBBlock* locationData, int nextOpCodeOffset);
 	std::string formatString(const char* fmt, ...);
 	std::string formatStringVa(const char* fmt, va_list args);
@@ -67,4 +68,8 @@ namespace IGCS::Utils
 	bool keyDown(int virtualKeyCode);
 	bool altPressed();
 	std::string vkCodeToString(int vkCode);
+	float floatFromBytes(uint8_t byteArray[], DWORD arrayLength, int startIndex);
+	int intFromBytes(uint8_t byteArray[], DWORD arrayLength, int startIndex);
+	std::string stringFromBytes(uint8_t byteArray[], DWORD arrayLength, int startIndex);
+	std::filesystem::path obtainHostExeAndPath();
 }
